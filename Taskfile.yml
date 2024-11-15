@@ -4,3 +4,8 @@ tasks:
   generate:
     cmds:
       - sqlc generate
+  migration:
+    cmds:
+      - migrate create -ext sql -dir migrations -seq {{.NAME}}
+    requires:
+      vars: [NAME]
