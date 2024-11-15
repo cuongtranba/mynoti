@@ -2,12 +2,10 @@ package domain
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 type Comic struct {
-	ID          int64
+	ID          int32
 	Url         string
 	Name        string
 	Description string
@@ -16,7 +14,7 @@ type Comic struct {
 
 type ComicRepository interface {
 	Save(context.Context, *Comic) error
-	Get(context.Context, uuid.UUID) (*Comic, error)
-	Delete(context.Context, uuid.UUID) error
+	Get(context.Context, int32) (*Comic, error)
+	Delete(context.Context, int32) error
 	List(context.Context) ([]Comic, error)
 }

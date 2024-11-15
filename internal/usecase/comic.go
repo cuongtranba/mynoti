@@ -18,7 +18,7 @@ func (w *comicUseCase) Subscribe(ctx context.Context, comic *domain.Comic) error
 	return w.repo.Save(ctx, comic)
 }
 
-func NewWebUseCase(repo domain.ComicRepository) ComicUseCase {
+func NewComicUseCase(repo domain.ComicRepository) ComicUseCase {
 	return &comicUseCase{
 		repo: repo,
 	}
