@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/repository/sqlc/comic/query.sql"
+    schema: "internal/repository/sqlc/comic/schema.sql"
+    gen:
+      go:
+        package: "comic"
+        out: "internal/repository/sqlc/comic"
+        sql_package: "pgx/v5"
