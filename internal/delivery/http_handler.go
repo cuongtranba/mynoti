@@ -6,7 +6,10 @@ import (
 	"github.com/cuongtranba/mynoti/internal/domain"
 	"github.com/cuongtranba/mynoti/internal/usecase"
 	"github.com/cuongtranba/mynoti/pkg/app_context"
+	"github.com/cuongtranba/mynoti/pkg/logger"
+	"github.com/cuongtranba/mynoti/pkg/middleware"
 	"github.com/labstack/echo/v4"
+	echo_middleware "github.com/labstack/echo/v4/middleware"
 )
 
 type Server struct {
@@ -20,8 +23,17 @@ type Comic struct {
 	Html        string `json:"html"`
 }
 
-func NewServer(port string, comicUseCase usecase.ComicUseCase) *Server {
+func NewServer(
+	port string,
+	comicUseCase usecase.ComicUseCase,
+	log *logger.Logger,
+) *Server {
 	e := echo.New()
+
+	e.Use(echo_middleware.Recover())
+	e.Use(echo.WrapMiddleware(middleware.ContextMiddleware()))
+	e.Use(echo.WrapMiddleware(middleware.LoggerMiddleware(log)))
+
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})

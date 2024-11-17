@@ -11,6 +11,7 @@ import (
 	"github.com/cuongtranba/mynoti/internal/domain/mocks"
 	"github.com/cuongtranba/mynoti/internal/usecase"
 	"github.com/cuongtranba/mynoti/pkg/app_context"
+	"github.com/cuongtranba/mynoti/pkg/logger"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -37,7 +38,7 @@ func TestNewServer(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 
-	server := NewServer(":8080", initMockUseCase())
+	server := NewServer(":8080", initMockUseCase(), logger.NewDefaultLogger())
 	server.server.Handler.ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusOK {
@@ -46,7 +47,7 @@ func TestNewServer(t *testing.T) {
 }
 
 func Test_Should_Start_Server(t *testing.T) {
-	server := NewServer(":8111", initMockUseCase())
+	server := NewServer(":8111", initMockUseCase(), logger.NewDefaultLogger())
 	defer server.Stop(app_context.New(context.Background()))
 	err := server.Start(app_context.New(context.Background()))
 	if err != nil {
