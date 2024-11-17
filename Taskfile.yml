@@ -6,6 +6,35 @@ tasks:
     desc: Display available tasks
     cmds:
       - task --list
+
+  go:build:
+    internal: true
+    desc: "Build the Go application using the specified directory and name."
+    prefix: "{{.APP_NAME}}"
+    label: "{{.APP_NAME}}"
+    cmds:
+      - go build -o ./bin/{{.APP_NAME}} {{.APP_DIR}}/main.go
+    requires:
+      vars:
+        - APP_DIR
+        - APP_NAME
+
+  go:run:
+    internal: true
+    desc: "Run the Go application using the specified directory and name."
+    cmds:
+      - ./bin/{{.APP_NAME}}
+    requires:
+      vars:
+        - APP_DIR
+        - APP_NAME
+  go:dev:
+    cmds:
+      - task: go:build
+        vars: { APP_DIR: "{{.APP_DIR}}", APP_NAME: "{{.APP_NAME}}" }
+      - task: go:run
+        vars: { APP_DIR: "{{.APP_DIR}}", APP_NAME: "{{.APP_NAME}}" }
+
   generate:
     desc: Generate code for database queries using SQLC based on the specified SQL schema and queries.
     cmds:
@@ -24,3 +53,17 @@ tasks:
       - migrate -path migrations -database {{.DATABASE_URL}} up
     requires:
       dotenv: [DATABASE_URL]
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+
+  app:api:
+    desc: Run the api app
+    vars:
+      APP_DIR: "cmd/server"
+      APP_NAME: "api"
+    cmds:
+      - task: go:dev
+        vars: { APP_DIR: "{{.APP_DIR}}", APP_NAME: "{{.APP_NAME}}" }
