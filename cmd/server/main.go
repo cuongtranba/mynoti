@@ -20,19 +20,17 @@ const timeout = 10 * time.Second
 
 func main() {
 	config := config.LoadConfig()
-	ctx, cancelFunc := context.WithTimeout(context.Background(), timeout)
-	defer cancelFunc()
-	con, err := postgres.Connect(ctx, config.DatabaseURL)
+	con, err := postgres.Connect(context.Background(), config.DatabaseURL)
 	if err != nil {
 		panic(err)
 	}
-	defer con.Close(ctx)
+	defer con.Close(context.Background())
 
 	comicRepo := repository.NewComicRepository(comic.New(con))
 	comicUseCase := usecase.NewComicUseCase(comicRepo)
 	log := logger.NewLogger("api")
 	httpServer := delivery.NewServer(config.Port, comicUseCase, log)
-	if err := signal.Run(app_context.New(ctx), httpServer, timeout, syscall.SIGINT, syscall.SIGTERM); err != nil {
+	if err := signal.Run(app_context.New(context.Background()), httpServer, timeout, syscall.SIGINT, syscall.SIGTERM); err != nil {
 		log.Fatal(err)
 	}
 }

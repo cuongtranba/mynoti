@@ -45,8 +45,6 @@ func NewLogger(appName string) *Logger {
 }
 
 func NewDefaultLogger() *Logger {
-	doOnce.Do(func() {
-		logger = NewLogger(os.Getenv("APP_NAME"))
-	})
+	logger = NewLogger("app")
 	return logger
 }

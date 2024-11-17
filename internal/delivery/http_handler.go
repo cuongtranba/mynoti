@@ -63,7 +63,7 @@ func NewServer(
 }
 
 func (s *Server) Start(ctx *app_context.AppContext) error {
-	ctx.Logger().Info("start server")
+	ctx.Logger().Info("start server", logger.String("port", s.server.Addr))
 	return s.server.ListenAndServe()
 }
 

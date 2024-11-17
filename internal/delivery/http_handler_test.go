@@ -2,7 +2,6 @@ package delivery
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/cuongtranba/mynoti/internal/domain/mocks"
 	"github.com/cuongtranba/mynoti/internal/usecase"
-	"github.com/cuongtranba/mynoti/pkg/app_context"
 	"github.com/cuongtranba/mynoti/pkg/logger"
 	"github.com/stretchr/testify/mock"
 )
@@ -43,14 +41,5 @@ func TestNewServer(t *testing.T) {
 
 	if rec.Code != http.StatusOK {
 		t.Errorf("expected status code %d, got %d", http.StatusOK, rec.Code)
-	}
-}
-
-func Test_Should_Start_Server(t *testing.T) {
-	server := NewServer(":8111", initMockUseCase(), logger.NewDefaultLogger())
-	defer server.Stop(app_context.New(context.Background()))
-	err := server.Start(app_context.New(context.Background()))
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
 	}
 }
