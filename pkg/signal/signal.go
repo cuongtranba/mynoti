@@ -6,12 +6,13 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/cuongtranba/mynoti/pkg/app_context"
 	"github.com/pkg/errors"
 )
 
 type Runner interface {
-	Start() error
-	Stop(context.Context) error
+	Start(*app_context.AppContext) error
+	Stop(*app_context.AppContext) error
 }
 
 // Run runs r.Start() and waits for either r.Start() to complete successfully, or
@@ -23,15 +24,15 @@ type Runner interface {
 // Run returns an error immediately.
 //
 // Run returns the first error it encounters, either from r.Start() or r.Stop().
-func Run(ctx context.Context, r Runner, timeout time.Duration, sig ...os.Signal) error {
+func Run(ctx *app_context.AppContext, r Runner, timeout time.Duration, sig ...os.Signal) error {
 	if len(sig) == 0 {
 		return errors.New("signal is empty")
 	}
-	ctx, stop := signal.NotifyContext(ctx, sig...)
+	ctxv, stop := signal.NotifyContext(ctx, sig...)
 	defer stop()
 	errStartChan := make(chan error, 1)
 	go func() {
-		errStartChan <- r.Start()
+		errStartChan <- r.Start(ctx)
 	}()
 
 	select {
@@ -39,10 +40,11 @@ func Run(ctx context.Context, r Runner, timeout time.Duration, sig ...os.Signal)
 		if err != nil {
 			return errors.WithMessage(err, "start error")
 		}
-	case <-ctx.Done():
+	case <-ctxv.Done():
+		ctx.Logger().Warn("stop by signal")
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
-		if err := r.Stop(ctx); err != nil {
+		if err := r.Stop(app_context.New(ctx)); err != nil {
 			return errors.WithMessage(err, "stop error")
 		}
 	}

@@ -1,13 +1,12 @@
 package delivery
 
 import (
-	"context"
-	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/cuongtranba/mynoti/internal/domain"
 	"github.com/cuongtranba/mynoti/internal/usecase"
+	"github.com/cuongtranba/mynoti/pkg/app_context"
+	"github.com/labstack/echo/v4"
 )
 
 type Server struct {
@@ -22,39 +21,41 @@ type Comic struct {
 }
 
 func NewServer(port string, comicUseCase usecase.ComicUseCase) *Server {
-	mux := http.NewServeMux()
-	mux.Handle("POST /subscribe", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	e := echo.New()
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello, World!")
+	})
+	e.POST("/subscribe", func(c echo.Context) error {
 		var comic Comic
-		if err := json.NewDecoder(r.Body).Decode(&comic); err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
+		if err := c.Bind(&comic); err != nil {
+			return err
 		}
-		err := comicUseCase.Subscribe(r.Context(), &domain.Comic{
+		err := comicUseCase.Subscribe(c.Request().Context(), &domain.Comic{
 			Url:         comic.Url,
 			Name:        comic.Name,
 			Description: comic.Description,
 			Html:        comic.Html,
 		})
 		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			return err
 		}
-		w.WriteHeader(http.StatusOK)
-	}))
+		return c.JSON(http.StatusOK, nil)
+	})
+
 	return &Server{
 		server: &http.Server{
 			Addr:    port,
-			Handler: mux,
+			Handler: e,
 		},
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(ctx *app_context.AppContext) error {
+	ctx.Logger().Info("start server")
 	return s.server.ListenAndServe()
 }
 
-func (s *Server) Stop(ctx context.Context) error {
+func (s *Server) Stop(ctx *app_context.AppContext) error {
+	ctx.Logger().Info("stop server")
 	return s.server.Shutdown(ctx)
 }

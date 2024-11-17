@@ -5,6 +5,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/cuongtranba/mynoti/pkg/app_context"
 )
 
 type mockRunner struct {
@@ -14,7 +16,7 @@ type mockRunner struct {
 	stopped  bool
 }
 
-func (m *mockRunner) Start() error {
+func (m *mockRunner) Start(ctx *app_context.AppContext) error {
 	if m.startErr != nil {
 		return m.startErr
 	}
@@ -22,7 +24,7 @@ func (m *mockRunner) Start() error {
 	return nil
 }
 
-func (m *mockRunner) Stop(ctx context.Context) error {
+func (m *mockRunner) Stop(ctx *app_context.AppContext) error {
 	if m.stopErr != nil {
 		return m.stopErr
 	}
@@ -38,7 +40,7 @@ func TestRun_Start_Stop(t *testing.T) {
 	done := make(chan struct{})
 	errCh := make(chan error, 1)
 	go func() {
-		err := Run(ctx, r, 3*time.Second, syscall.SIGINT)
+		err := Run(app_context.New(ctx), r, 3*time.Second, syscall.SIGINT)
 		errCh <- err
 		close(errCh)
 		close(done)

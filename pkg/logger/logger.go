@@ -1,10 +1,31 @@
 package logger
 
 import (
-    "log"
+	"log/slog"
+	"os"
+	"sync"
 )
 
-// Info logs an info message
-func Info(message string) {
-    log.Println("[INFO]", message)
+var (
+	logger *Logger
+	doOnce sync.Once
+)
+
+type Logger struct {
+	*slog.Logger
+}
+
+func NewLogger(appName string) *Logger {
+	v := &Logger{
+		Logger: slog.With(
+			slog.String("app", appName)),
+	}
+	return v
+}
+
+func NewDefaultLogger() *Logger {
+	doOnce.Do(func() {
+		logger = NewLogger(os.Getenv("APP_NAME"))
+	})
+	return logger
 }

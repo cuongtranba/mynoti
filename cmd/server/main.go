@@ -12,6 +12,7 @@ import (
 	"github.com/cuongtranba/mynoti/internal/repository"
 	"github.com/cuongtranba/mynoti/internal/repository/sqlc/comic"
 	"github.com/cuongtranba/mynoti/internal/usecase"
+	"github.com/cuongtranba/mynoti/pkg/app_context"
 	"github.com/cuongtranba/mynoti/pkg/signal"
 )
 
@@ -30,7 +31,7 @@ func main() {
 	comicRepo := repository.NewComicRepository(comic.New(con))
 	comicUseCase := usecase.NewComicUseCase(comicRepo)
 	httpServer := delivery.NewServer(config.Port, comicUseCase)
-	if err := signal.Run(ctx, httpServer, timeout, syscall.SIGINT, syscall.SIGTERM); err != nil {
+	if err := signal.Run(app_context.New(ctx), httpServer, timeout, syscall.SIGINT, syscall.SIGTERM); err != nil {
 		log.Fatal(err)
 	}
 }
