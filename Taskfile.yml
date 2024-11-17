@@ -1,11 +1,26 @@
 version: "3"
-
+dotenv:
+  - .env
 tasks:
+  default:
+    desc: Display available tasks
+    cmds:
+      - task --list
   generate:
+    desc: Generate code for database queries using SQLC based on the specified SQL schema and queries.
     cmds:
       - sqlc generate
-  migration:
+
+  migration:create:
+    desc: Create a new database migration file with a sequential timestamp and the specified name. The migration files will be created in the `migrations` directory.
     cmds:
       - migrate create -ext sql -dir migrations -seq {{.NAME}}
     requires:
       vars: [NAME]
+
+  migration:up:
+    desc: Apply all pending migrations to the database using the specified database URL. The migrations are sourced from the `migrations` directory.
+    cmds:
+      - migrate -path migrations -database {{.DATABASE_URL}} up
+    requires:
+      dotenv: [DATABASE_URL]
