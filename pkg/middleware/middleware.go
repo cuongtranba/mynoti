@@ -52,9 +52,9 @@ func LoggerMiddleware(l *logger.Logger) func(http.Handler) http.Handler {
 				req:            r,
 				startTime:      time.Now(),
 			}
-			ctx := app_context.New(r.Context())
-			ctx = ctx.WithContext(ctx.WithLogger(l))
-			next.ServeHTTP(lrw, r.WithContext(ctx))
+			appContext := r.Context().(*app_context.AppContext)
+			appContext = appContext.WithLogger(l)
+			next.ServeHTTP(lrw, r.WithContext(appContext))
 		})
 	}
 }

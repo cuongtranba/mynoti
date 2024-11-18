@@ -16,6 +16,18 @@ type Server struct {
 	server *http.Server
 }
 
+type handlerContext struct {
+	ctx *app_context.AppContext
+	echo.Context
+}
+
+func Warp(handler func(*handlerContext) error) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		customCtx := &handlerContext{ctx: c.Request().Context().(*app_context.AppContext), Context: c}
+		return handler(customCtx)
+	}
+}
+
 func NewServer(
 	port string,
 	comicUseCase usecase.ComicUseCase,
@@ -30,12 +42,12 @@ func NewServer(
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
-	e.POST("/subscribe", func(c echo.Context) error {
+	e.POST("/subscribe", Warp(func(hc *handlerContext) error {
 		var comic Comic
-		if err := c.Bind(&comic); err != nil {
+		if err := hc.Bind(&comic); err != nil {
 			return err
 		}
-		err := comicUseCase.Subscribe(c.Request().Context(), &domain.Comic{
+		err := comicUseCase.Subscribe(hc.ctx, &domain.Comic{
 			Url:         comic.Url,
 			Name:        comic.Name,
 			Description: comic.Description,
@@ -45,8 +57,8 @@ func NewServer(
 		if err != nil {
 			return err
 		}
-		return c.JSON(http.StatusOK, nil)
-	})
+		return hc.JSON(http.StatusOK, nil)
+	}))
 
 	return &Server{
 		server: &http.Server{
