@@ -16,14 +16,6 @@ type Server struct {
 	server *http.Server
 }
 
-type Comic struct {
-	Url         string `json:"url"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Html        string `json:"html"`
-	CronSpec    string `json:"cron_spec"`
-}
-
 func NewServer(
 	port string,
 	comicUseCase usecase.ComicUseCase,

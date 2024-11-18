@@ -15,6 +15,9 @@ type comicUseCase struct {
 }
 
 func (w *comicUseCase) Subscribe(ctx context.Context, comic *domain.Comic) error {
+	if err := validate.Struct(comic); err != nil {
+		return err
+	}
 	return w.repo.Save(ctx, comic)
 }
 

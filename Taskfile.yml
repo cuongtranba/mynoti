@@ -52,7 +52,7 @@ tasks:
     cmds:
       - migrate -path migrations -database {{.DATABASE_URL}} up
     requires:
-      dotenv: [DATABASE_URL]
+      vars: [DATABASE_URL]
 
   test:
     desc: Run tests
@@ -64,6 +64,15 @@ tasks:
     vars:
       APP_DIR: "cmd/server"
       APP_NAME: "api"
+    cmds:
+      - task: go:dev
+        vars: { APP_DIR: "{{.APP_DIR}}", APP_NAME: "{{.APP_NAME}}" }
+
+  app:cli:
+    desc: Run the CLI app
+    vars:
+      APP_DIR: "cmd/cli"
+      APP_NAME: "cli"
     cmds:
       - task: go:dev
         vars: { APP_DIR: "{{.APP_DIR}}", APP_NAME: "{{.APP_NAME}}" }

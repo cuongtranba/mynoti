@@ -97,12 +97,19 @@ func (u *userRepository) Save(ctx context.Context, req *domain.Comic) error {
 		Url: req.Url,
 		Name: pgtype.Text{
 			String: req.Name,
+			Valid:  true,
 		},
 		Description: pgtype.Text{
 			String: req.Description,
+			Valid:  true,
 		},
 		Html: pgtype.Text{
 			String: req.Html,
+			Valid:  true,
+		},
+		CronSpec: pgtype.Text{
+			String: req.CronSpec,
+			Valid:  true,
 		},
 	}))
 	return err

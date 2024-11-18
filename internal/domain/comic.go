@@ -6,11 +6,11 @@ import (
 
 type Comic struct {
 	ID          int32
-	Url         string
-	Name        string
-	Description string
+	Url         string `validate:"required"`
+	Name        string `validate:"required"`
+	Description string `validate:"required"`
 	Html        string
-	CronSpec    string
+	CronSpec    string `validate:"required"`
 }
 
 type ComicRepository interface {
