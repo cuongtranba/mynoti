@@ -84,7 +84,9 @@ var CLIApp = fx.New(
 
 var ServerAPP = fx.New(
 	UseCaseComicModule,
-	fx.Provide(newLoggerName("api")),
+	fx.Provide(
+		newLoggerName("api"),
+	),
 	fx.Invoke(func(lc fx.Lifecycle, config *config.Config, logger *logger.Logger, useCase usecase.ComicUseCase) *delivery.Server {
 		var server *delivery.Server
 		lc.Append(fx.Hook{
@@ -101,3 +103,21 @@ var ServerAPP = fx.New(
 		return server
 	}),
 )
+
+type fxRunner struct {
+	app *fx.App
+}
+
+func NewFxRunner(fxApp *fx.App) *fxRunner {
+	return &fxRunner{
+		app: fxApp,
+	}
+}
+
+func (r *fxRunner) Start(ctx *app_context.AppContext) error {
+	return r.app.Start(ctx)
+}
+
+func (r *fxRunner) Stop(ctx *app_context.AppContext) error {
+	return r.app.Stop(ctx)
+}
