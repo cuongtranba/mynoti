@@ -1,0 +1,1 @@
+alter TABLE comic_tracking ADD COLUMN cron_spec VARCHAR(100);

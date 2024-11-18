@@ -4,5 +4,6 @@ CREATE TABLE comic_tracking (
     name        VARCHAR(255),
     description TEXT,
     html        TEXT,
+    cron_spec   VARCHAR(100),
     last_checked TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

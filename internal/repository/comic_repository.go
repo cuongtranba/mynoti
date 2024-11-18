@@ -48,17 +48,32 @@ func (u *userRepository) Get(ctx context.Context, id int32) (*domain.Comic, erro
 	if result == nil {
 		return nil, nil
 	}
-	domainComic := toDomainComic(*result)
+	domainComic := toDomainComic(result)
 	return &domainComic, nil
 }
 
-func toDomainComic(c comic.ComicTracking) domain.Comic {
-	return domain.Comic{
-		ID:          c.ID,
-		Url:         c.Url,
-		Name:        c.Name.String,
-		Description: c.Description.String,
-		Html:        c.Html.String,
+func toDomainComic[T comic.GetAllComicTrackingsRow | *comic.GetComicTrackingByIDRow](c T) domain.Comic {
+	switch v := any(c).(type) {
+	case *comic.GetComicTrackingByIDRow:
+		return domain.Comic{
+			ID:          v.ID,
+			Url:         v.Url,
+			Name:        v.Name.String,
+			Description: v.Description.String,
+			Html:        v.Html.String,
+			CronSpec:    v.CronSpec.String,
+		}
+	case comic.GetAllComicTrackingsRow:
+		return domain.Comic{
+			ID:          v.ID,
+			Url:         v.Url,
+			Name:        v.Name.String,
+			Description: v.Description.String,
+			Html:        v.Html.String,
+			CronSpec:    v.CronSpec.String,
+		}
+	default:
+		return domain.Comic{}
 	}
 }
 

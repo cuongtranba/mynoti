@@ -12,9 +12,9 @@ import (
 )
 
 const createComicTracking = `-- name: CreateComicTracking :exec
-INSERT INTO comic_tracking (url, name, description, html)
-VALUES ($1, $2, $3, $4)
-RETURNING id, url, name, description, html, last_checked
+INSERT INTO comic_tracking (url, name, description, html, cron_spec)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, url, name, description, html, last_checked, cron_spec
 `
 
 type CreateComicTrackingParams struct {
@@ -22,6 +22,7 @@ type CreateComicTrackingParams struct {
 	Name        pgtype.Text
 	Description pgtype.Text
 	Html        pgtype.Text
+	CronSpec    pgtype.Text
 }
 
 func (q *Queries) CreateComicTracking(ctx context.Context, arg CreateComicTrackingParams) error {
@@ -30,6 +31,7 @@ func (q *Queries) CreateComicTracking(ctx context.Context, arg CreateComicTracki
 		arg.Name,
 		arg.Description,
 		arg.Html,
+		arg.CronSpec,
 	)
 	return err
 }
@@ -46,19 +48,29 @@ func (q *Queries) DeleteComicTracking(ctx context.Context, id int32) error {
 }
 
 const getAllComicTrackings = `-- name: GetAllComicTrackings :many
-SELECT id, url, name, description, html, last_checked
+SELECT id, url, name, description, html, last_checked, cron_spec
 FROM comic_tracking
 `
 
-func (q *Queries) GetAllComicTrackings(ctx context.Context) ([]ComicTracking, error) {
+type GetAllComicTrackingsRow struct {
+	ID          int32
+	Url         string
+	Name        pgtype.Text
+	Description pgtype.Text
+	Html        pgtype.Text
+	LastChecked pgtype.Timestamp
+	CronSpec    pgtype.Text
+}
+
+func (q *Queries) GetAllComicTrackings(ctx context.Context) ([]GetAllComicTrackingsRow, error) {
 	rows, err := q.db.Query(ctx, getAllComicTrackings)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ComicTracking
+	var items []GetAllComicTrackingsRow
 	for rows.Next() {
-		var i ComicTracking
+		var i GetAllComicTrackingsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Url,
@@ -66,6 +78,7 @@ func (q *Queries) GetAllComicTrackings(ctx context.Context) ([]ComicTracking, er
 			&i.Description,
 			&i.Html,
 			&i.LastChecked,
+			&i.CronSpec,
 		); err != nil {
 			return nil, err
 		}
@@ -78,14 +91,24 @@ func (q *Queries) GetAllComicTrackings(ctx context.Context) ([]ComicTracking, er
 }
 
 const getComicTrackingByID = `-- name: GetComicTrackingByID :one
-SELECT id, url, name, description, html, last_checked
+SELECT id, url, name, description, html, last_checked, cron_spec
 FROM comic_tracking
 WHERE id = $1
 `
 
-func (q *Queries) GetComicTrackingByID(ctx context.Context, id int32) (ComicTracking, error) {
+type GetComicTrackingByIDRow struct {
+	ID          int32
+	Url         string
+	Name        pgtype.Text
+	Description pgtype.Text
+	Html        pgtype.Text
+	LastChecked pgtype.Timestamp
+	CronSpec    pgtype.Text
+}
+
+func (q *Queries) GetComicTrackingByID(ctx context.Context, id int32) (GetComicTrackingByIDRow, error) {
 	row := q.db.QueryRow(ctx, getComicTrackingByID, id)
-	var i ComicTracking
+	var i GetComicTrackingByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Url,
@@ -93,12 +116,13 @@ func (q *Queries) GetComicTrackingByID(ctx context.Context, id int32) (ComicTrac
 		&i.Description,
 		&i.Html,
 		&i.LastChecked,
+		&i.CronSpec,
 	)
 	return i, err
 }
 
 const getComicTrackingsList = `-- name: GetComicTrackingsList :many
-SELECT id, url, name, description, html, last_checked
+SELECT id, url, name, description, html, last_checked, cron_spec
 FROM comic_tracking
 ORDER BY last_checked DESC
 LIMIT $1 OFFSET $2
@@ -109,15 +133,25 @@ type GetComicTrackingsListParams struct {
 	Offset int32
 }
 
-func (q *Queries) GetComicTrackingsList(ctx context.Context, arg GetComicTrackingsListParams) ([]ComicTracking, error) {
+type GetComicTrackingsListRow struct {
+	ID          int32
+	Url         string
+	Name        pgtype.Text
+	Description pgtype.Text
+	Html        pgtype.Text
+	LastChecked pgtype.Timestamp
+	CronSpec    pgtype.Text
+}
+
+func (q *Queries) GetComicTrackingsList(ctx context.Context, arg GetComicTrackingsListParams) ([]GetComicTrackingsListRow, error) {
 	rows, err := q.db.Query(ctx, getComicTrackingsList, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ComicTracking
+	var items []GetComicTrackingsListRow
 	for rows.Next() {
-		var i ComicTracking
+		var i GetComicTrackingsListRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Url,
@@ -125,6 +159,7 @@ func (q *Queries) GetComicTrackingsList(ctx context.Context, arg GetComicTrackin
 			&i.Description,
 			&i.Html,
 			&i.LastChecked,
+			&i.CronSpec,
 		); err != nil {
 			return nil, err
 		}
@@ -142,9 +177,10 @@ SET url = $2,
     name = $3, 
     description = $4, 
     html = $5, 
-    last_checked = CURRENT_TIMESTAMP
+    last_checked = CURRENT_TIMESTAMP,
+    cron_spec = $6
 WHERE id = $1
-RETURNING id, url, name, description, html, last_checked
+RETURNING id, url, name, description, html, last_checked, cron_spec
 `
 
 type UpdateComicTrackingParams struct {
@@ -153,6 +189,7 @@ type UpdateComicTrackingParams struct {
 	Name        pgtype.Text
 	Description pgtype.Text
 	Html        pgtype.Text
+	CronSpec    pgtype.Text
 }
 
 func (q *Queries) UpdateComicTracking(ctx context.Context, arg UpdateComicTrackingParams) error {
@@ -162,6 +199,7 @@ func (q *Queries) UpdateComicTracking(ctx context.Context, arg UpdateComicTracki
 		arg.Name,
 		arg.Description,
 		arg.Html,
+		arg.CronSpec,
 	)
 	return err
 }

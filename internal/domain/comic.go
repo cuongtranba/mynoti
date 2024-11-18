@@ -10,6 +10,7 @@ type Comic struct {
 	Name        string
 	Description string
 	Html        string
+	CronSpec    string
 }
 
 type ComicRepository interface {

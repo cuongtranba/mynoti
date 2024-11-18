@@ -14,5 +14,6 @@ type ComicTracking struct {
 	Name        pgtype.Text
 	Description pgtype.Text
 	Html        pgtype.Text
+	CronSpec    pgtype.Text
 	LastChecked pgtype.Timestamp
 }

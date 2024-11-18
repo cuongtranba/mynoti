@@ -21,6 +21,7 @@ type Comic struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Html        string `json:"html"`
+	CronSpec    string `json:"cron_spec"`
 }
 
 func NewServer(
@@ -47,6 +48,7 @@ func NewServer(
 			Name:        comic.Name,
 			Description: comic.Description,
 			Html:        comic.Html,
+			CronSpec:    comic.CronSpec,
 		})
 		if err != nil {
 			return err
