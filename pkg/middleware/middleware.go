@@ -35,7 +35,7 @@ func (lrw *loggingResponseWriter) WriteHeader(statusCode int) {
 			"request",
 			logger.String("method", r.Method),
 			logger.String("path", r.URL.Path),
-			logger.String("status", http.StatusText(lrw.statusCode)),
+			logger.Int("status", lrw.statusCode),
 			logger.Duration("duration", time.Since(startTime)),
 		)
 	}()
