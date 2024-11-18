@@ -3,6 +3,7 @@ package delivery
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/cuongtranba/mynoti/internal/usecase"
 	"github.com/cuongtranba/mynoti/pkg/logger"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func initMockUseCase() usecase.ComicUseCase {
@@ -25,6 +27,7 @@ func TestNewServer(t *testing.T) {
 		Name:        "Test Comic",
 		Description: "Test Description",
 		Html:        "<div>Test</div>",
+		CronSpec:    "0 0 * * *",
 	}
 
 	payloadBytes, err := json.Marshal(payload)
@@ -38,8 +41,9 @@ func TestNewServer(t *testing.T) {
 
 	server := NewServer(":8080", initMockUseCase(), logger.NewDefaultLogger())
 	server.server.Handler.ServeHTTP(rec, req)
-
+	b, err := io.ReadAll(rec.Result().Body)
+	require.NoError(t, err)
 	if rec.Code != http.StatusOK {
-		t.Errorf("expected status code %d, got %d", http.StatusOK, rec.Code)
+		t.Errorf("expected status code %d, got %d, body: %s", http.StatusOK, rec.Code, b)
 	}
 }

@@ -21,8 +21,7 @@ var (
 )
 
 var (
-	logger *Logger
-	doOnce sync.Once
+	loggerMap sync.Map
 )
 
 type Logger struct {
@@ -35,16 +34,15 @@ func (l *Logger) Fatal(err error) {
 }
 
 func NewLogger(appName string) *Logger {
-	doOnce.Do(func() {
-		logger = &Logger{
-			Logger: slog.With(
-				slog.String("app", appName)),
-		}
-	})
-	return logger
+	logger := &Logger{
+		Logger: slog.With(
+			slog.String("app", appName)),
+	}
+	l, _ := loggerMap.LoadOrStore(appName, logger)
+	return l.(*Logger)
 }
 
 func NewDefaultLogger() *Logger {
-	logger = NewLogger("app")
+	logger := NewLogger("app")
 	return logger
 }
