@@ -13,7 +13,11 @@ import (
 
 func main() {
 	app := appfx.NewFxRunner(appfx.CLIApp)
-	defer app.Stop(app_context.New(context.Background()))
+	defer func() {
+		if err := app.Stop(app_context.New(context.Background())); err != nil {
+			panic(err)
+		}
+	}()
 	err := signal.Run(
 		app_context.New(context.Background()),
 		app,
