@@ -2,7 +2,6 @@ package delivery
 
 import (
 	"github.com/cuongtranba/mynoti/internal/domain"
-	"github.com/cuongtranba/mynoti/internal/usecase"
 	"github.com/cuongtranba/mynoti/pkg/app_context"
 	"github.com/cuongtranba/mynoti/pkg/logger"
 	"github.com/urfave/cli/v2"
@@ -13,7 +12,7 @@ type Cli struct {
 	args []string
 }
 
-func NewCli(logger *logger.Logger, useCase usecase.ComicUseCase, args []string) *Cli {
+func NewCli(logger *logger.Logger, useCase domain.ComicUseCase, args []string) *Cli {
 	app := &cli.App{
 		Name:        "mynoti",
 		Usage:       `A tool to manage your comic subscription.`,
@@ -37,7 +36,7 @@ func (c *Cli) Stop(ctx *app_context.AppContext) error {
 	return nil
 }
 
-func newSubscribeCommand(logger *logger.Logger, useCase usecase.ComicUseCase) *cli.Command {
+func newSubscribeCommand(logger *logger.Logger, useCase domain.ComicUseCase) *cli.Command {
 	return &cli.Command{
 		Name:    "subscribe",
 		Aliases: []string{"s"},
@@ -78,7 +77,7 @@ func newComicFlags() []cli.Flag {
 	}
 }
 
-func handleSubscribeAction(cCtx *cli.Context, logger *logger.Logger, useCase usecase.ComicUseCase) error {
+func handleSubscribeAction(cCtx *cli.Context, logger *logger.Logger, useCase domain.ComicUseCase) error {
 	comic := &domain.Comic{
 		Url:         cCtx.String("url"),
 		Name:        cCtx.String("name"),

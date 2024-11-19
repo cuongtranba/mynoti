@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/cuongtranba/mynoti/internal/domain"
 	"github.com/cuongtranba/mynoti/internal/domain/mocks"
 	"github.com/cuongtranba/mynoti/internal/usecase"
 	"github.com/cuongtranba/mynoti/pkg/logger"
@@ -15,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func initMockUseCase() usecase.ComicUseCase {
+func initMockUseCase() domain.ComicUseCase {
 	repoMock := new(mocks.ComicRepository)
 	repoMock.On("Save", mock.Anything, mock.Anything).Return(nil)
 	return usecase.NewComicUseCase(repoMock)

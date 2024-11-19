@@ -8,6 +8,7 @@ import (
 	"github.com/cuongtranba/mynoti/internal/config"
 	"github.com/cuongtranba/mynoti/internal/db/postgres"
 	"github.com/cuongtranba/mynoti/internal/delivery"
+	"github.com/cuongtranba/mynoti/internal/domain"
 	"github.com/cuongtranba/mynoti/internal/repository"
 	"github.com/cuongtranba/mynoti/internal/repository/sqlc/comic"
 	"github.com/cuongtranba/mynoti/internal/usecase"
@@ -73,7 +74,7 @@ var CLIModule = fx.Module(
 	"CLIModule",
 	UseCaseComicModule,
 	fx.Provide(newLoggerName("cli")),
-	fx.Invoke(func(logger *logger.Logger, useCase usecase.ComicUseCase) *delivery.Cli {
+	fx.Invoke(func(logger *logger.Logger, useCase domain.ComicUseCase) *delivery.Cli {
 		return delivery.NewCli(logger, useCase, os.Args)
 	}),
 )
@@ -87,7 +88,7 @@ var ServerAPP = fx.New(
 	fx.Provide(
 		newLoggerName("api"),
 	),
-	fx.Invoke(func(lc fx.Lifecycle, config *config.Config, logger *logger.Logger, useCase usecase.ComicUseCase) *delivery.Server {
+	fx.Invoke(func(lc fx.Lifecycle, config *config.Config, logger *logger.Logger, useCase domain.ComicUseCase) *delivery.Server {
 		var server *delivery.Server
 		lc.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {

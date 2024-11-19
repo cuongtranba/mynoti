@@ -5,10 +5,6 @@ import (
 	"github.com/cuongtranba/mynoti/pkg/app_context"
 )
 
-type ComicUseCase interface {
-	Subscribe(ctx *app_context.AppContext, comic *domain.Comic) error
-}
-
 type comicUseCase struct {
 	repo domain.ComicRepository
 }
@@ -20,7 +16,7 @@ func (w *comicUseCase) Subscribe(ctx *app_context.AppContext, comic *domain.Comi
 	return w.repo.Save(ctx, comic)
 }
 
-func NewComicUseCase(repo domain.ComicRepository) ComicUseCase {
+func NewComicUseCase(repo domain.ComicRepository) domain.ComicUseCase {
 	return &comicUseCase{
 		repo: repo,
 	}

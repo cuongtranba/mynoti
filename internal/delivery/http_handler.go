@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/cuongtranba/mynoti/internal/domain"
-	"github.com/cuongtranba/mynoti/internal/usecase"
 	"github.com/cuongtranba/mynoti/pkg/app_context"
 	"github.com/cuongtranba/mynoti/pkg/logger"
 	"github.com/cuongtranba/mynoti/pkg/middleware"
@@ -30,7 +29,7 @@ func Warp(handler func(*handlerContext) error) echo.HandlerFunc {
 
 func NewServer(
 	port string,
-	comicUseCase usecase.ComicUseCase,
+	comicUseCase domain.ComicUseCase,
 	log *logger.Logger,
 ) *Server {
 	e := echo.New()
