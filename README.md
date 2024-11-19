@@ -1,3 +1,4 @@
+![Go Test](https://github.com/cuongtranba/mynoti/actions/workflows/go-test.yml/badge.svg)
 # Comic Tracking Bot
 
 ## Overview
