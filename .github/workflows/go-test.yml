@@ -23,6 +23,7 @@ jobs:
       - name: Install Task
         run: |
           sudo sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+          echo "Task installed at $(which task)"
 
       - name: Install dependencies
         run: go mod tidy
