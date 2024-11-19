@@ -25,3 +25,7 @@ type ComicRepository interface {
 type ComicUseCase interface {
 	Subscribe(ctx *app_context.AppContext, comic *Comic) error
 }
+
+type HtmlFetcher interface {
+	Fetch(ctx *app_context.AppContext, url string) (string, error)
+}

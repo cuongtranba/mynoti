@@ -7,6 +7,15 @@ tasks:
     cmds:
       - task --list
 
+  mockgen:
+    desc: Generate mocks for the specified package
+    cmds:
+      - mockery --name={{.NAME}} --dir={{.DIR}} --output={{.DIR}}/mocks
+    requires:
+      vars:
+        - DIR
+        - NAME
+
   go:build:
     internal: true
     desc: "Build the Go application using the specified directory and name."

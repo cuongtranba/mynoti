@@ -48,32 +48,31 @@ func (u *userRepository) Get(ctx context.Context, id int32) (*domain.Comic, erro
 	if result == nil {
 		return nil, nil
 	}
-	domainComic := toDomainComic(result)
-	return &domainComic, nil
+	return toDomainComic(result)
 }
 
-func toDomainComic[T comic.GetAllComicTrackingsRow | *comic.GetComicTrackingByIDRow](c T) domain.Comic {
+func toDomainComic[T comic.GetAllComicTrackingsRow | *comic.GetComicTrackingByIDRow](c T) (*domain.Comic, error) {
 	switch v := any(c).(type) {
 	case *comic.GetComicTrackingByIDRow:
-		return domain.Comic{
+		return &domain.Comic{
 			ID:          v.ID,
 			Url:         v.Url,
 			Name:        v.Name.String,
 			Description: v.Description.String,
 			Html:        v.Html.String,
 			CronSpec:    v.CronSpec.String,
-		}
+		}, nil
 	case comic.GetAllComicTrackingsRow:
-		return domain.Comic{
+		return &domain.Comic{
 			ID:          v.ID,
 			Url:         v.Url,
 			Name:        v.Name.String,
 			Description: v.Description.String,
 			Html:        v.Html.String,
 			CronSpec:    v.CronSpec.String,
-		}
+		}, nil
 	default:
-		return domain.Comic{}
+		return nil, errors.New("not support type")
 	}
 }
 
@@ -87,7 +86,11 @@ func (u *userRepository) List(ctx context.Context) ([]domain.Comic, error) {
 	}
 	var comics []domain.Comic
 	for _, r := range *result {
-		comics = append(comics, toDomainComic(r))
+		comic, err := toDomainComic(r)
+		if err != nil {
+			return nil, err
+		}
+		comics = append(comics, *comic)
 	}
 	return comics, nil
 }

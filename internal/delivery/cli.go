@@ -32,6 +32,7 @@ func (c *Cli) Run(ctx *app_context.AppContext) error {
 	return c.app.RunContext(ctx, c.args)
 }
 
+// no-op
 func (c *Cli) Stop(ctx *app_context.AppContext) error {
 	return nil
 }

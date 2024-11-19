@@ -19,7 +19,9 @@ import (
 func initMockUseCase() domain.ComicUseCase {
 	repoMock := new(mocks.ComicRepository)
 	repoMock.On("Save", mock.Anything, mock.Anything).Return(nil)
-	return usecase.NewComicUseCase(repoMock)
+	htmlFetcherMock := new(mocks.HtmlFetcher)
+	htmlFetcherMock.On("Fetch", mock.Anything, mock.Anything).Return("test", nil)
+	return usecase.NewComicUseCase(repoMock, htmlFetcherMock)
 }
 
 func TestNewServer(t *testing.T) {
