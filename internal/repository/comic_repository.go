@@ -52,25 +52,21 @@ func (u *userRepository) Get(ctx context.Context, id int32) (*domain.Comic, erro
 }
 
 func toDomainComic[T comic.GetAllComicTrackingsRow | *comic.GetComicTrackingByIDRow](c T) (*domain.Comic, error) {
+	extractFields := func(id int32, url, name, description, html, cronSpec string) *domain.Comic {
+		return &domain.Comic{
+			ID:          id,
+			Url:         url,
+			Name:        name,
+			Description: description,
+			Html:        html,
+			CronSpec:    cronSpec,
+		}
+	}
 	switch v := any(c).(type) {
 	case *comic.GetComicTrackingByIDRow:
-		return &domain.Comic{
-			ID:          v.ID,
-			Url:         v.Url,
-			Name:        v.Name.String,
-			Description: v.Description.String,
-			Html:        v.Html.String,
-			CronSpec:    v.CronSpec.String,
-		}, nil
+		return extractFields(v.ID, v.Url, v.Name.String, v.Description.String, v.Html.String, v.CronSpec.String), nil
 	case comic.GetAllComicTrackingsRow:
-		return &domain.Comic{
-			ID:          v.ID,
-			Url:         v.Url,
-			Name:        v.Name.String,
-			Description: v.Description.String,
-			Html:        v.Html.String,
-			CronSpec:    v.CronSpec.String,
-		}, nil
+		return extractFields(v.ID, v.Url, v.Name.String, v.Description.String, v.Html.String, v.CronSpec.String), nil
 	default:
 		return nil, errors.New("not support type")
 	}
