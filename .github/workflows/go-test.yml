@@ -28,4 +28,5 @@ jobs:
         run: go mod tidy
 
       - name: Run tests
-        run: task test
+        run: |
+          task test
