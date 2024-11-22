@@ -15,6 +15,12 @@ type Comic struct {
 	CronSpec    string `validate:"required"`
 }
 
+type Job struct {
+	ID      int32
+	Url     string
+	JobSpec string
+}
+
 type ComicRepository interface {
 	Save(context.Context, *Comic) error
 	Get(context.Context, int32) (*Comic, error)
@@ -24,8 +30,25 @@ type ComicRepository interface {
 
 type ComicUseCase interface {
 	Subscribe(ctx *app_context.AppContext, comic *Comic) error
+	GetByID(ctx *app_context.AppContext, id int32) (*Comic, error)
 }
 
 type HtmlFetcher interface {
 	Fetch(ctx *app_context.AppContext, url string) (string, error)
+}
+
+type Watcher interface {
+	Watch(ctx *app_context.AppContext) error
+	Stop(ctx *app_context.AppContext) error
+	Register(ctx *app_context.AppContext, j Job) error
+	Unregister(ctx *app_context.AppContext, id int32) error
+	List(ctx *app_context.AppContext) ([]Job, error)
+}
+
+type Notifier[T any] interface {
+	Notify(ctx *app_context.AppContext, data T) error
+}
+
+type WatcherComic interface {
+	Register(ctx *app_context.AppContext, j Comic) error
 }

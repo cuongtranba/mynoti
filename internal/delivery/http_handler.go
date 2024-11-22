@@ -29,7 +29,7 @@ func Warp(handler func(*handlerContext) error) echo.HandlerFunc {
 
 func NewServer(
 	port string,
-	comicUseCase domain.ComicUseCase,
+	comicUseCase domain.WatcherComic,
 	log *logger.Logger,
 ) *Server {
 	e := echo.New()
@@ -46,7 +46,7 @@ func NewServer(
 		if err := hc.Bind(&comic); err != nil {
 			return err
 		}
-		err := comicUseCase.Subscribe(hc.ctx, &domain.Comic{
+		err := comicUseCase.Register(hc.ctx, domain.Comic{
 			Url:         comic.Url,
 			Name:        comic.Name,
 			Description: comic.Description,

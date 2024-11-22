@@ -16,12 +16,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func initMockUseCase() domain.ComicUseCase {
+func initMockUseCase() domain.WatcherComic {
 	repoMock := new(mocks.ComicRepository)
 	repoMock.On("Save", mock.Anything, mock.Anything).Return(nil)
 	htmlFetcherMock := new(mocks.HtmlFetcher)
 	htmlFetcherMock.On("Fetch", mock.Anything, mock.Anything).Return("test", nil)
-	return usecase.NewComicUseCase(repoMock, htmlFetcherMock)
+
+	watcherMock := new(mocks.Watcher)
+	watcherMock.On("Register", mock.Anything, mock.Anything).Return(nil)
+
+	comicUseCase := usecase.NewComicUseCase(repoMock, htmlFetcherMock)
+	return usecase.NewWatcherComic(watcherMock, comicUseCase)
 }
 
 func TestNewServer(t *testing.T) {

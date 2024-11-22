@@ -17,8 +17,9 @@ func main() {
 		appfx.NewFxRunner(appfx.ServerAPP),
 		3*time.Second,
 		syscall.SIGINT,
-		os.Interrupt,
 		os.Kill,
+		os.Interrupt,
+		syscall.SIGTERM,
 	); err != nil {
 		panic(err)
 	}

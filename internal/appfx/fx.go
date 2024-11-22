@@ -74,7 +74,9 @@ func newLoggerName(appName string) func() *logger.Logger {
 var CLIModule = fx.Module(
 	"CLIModule",
 	UseCaseComicModule,
-	fx.Provide(newLoggerName("cli")),
+	fx.Provide(
+		newLoggerName("cli"),
+	),
 	fx.Invoke(func(lc fx.Lifecycle, logger *logger.Logger, useCase domain.ComicUseCase) *delivery.Cli {
 		var server *delivery.Cli
 		lc.Append(fx.Hook{
@@ -111,13 +113,37 @@ var CLIApp = fx.New(
 	CLIModule,
 )
 
+var EchoModule = fx.Module(
+	"EchoModule",
+	fx.Provide(
+		usecase.NewEchoNotifier,
+	),
+)
+
+var WatcherModule = fx.Module(
+	"WatcherModule",
+	UseCaseComicModule,
+	EchoModule,
+	fx.Provide(
+		usecase.NewWatcher,
+	),
+)
+
+var WatcherComic = fx.Module(
+	"WatcherComic",
+	WatcherModule,
+	fx.Provide(
+		usecase.NewWatcherComic,
+	),
+)
+
 var ServerAPP = fx.New(
 	fx.NopLogger,
-	UseCaseComicModule,
+	WatcherComic,
 	fx.Provide(
 		newLoggerName("api"),
 	),
-	fx.Invoke(func(lc fx.Lifecycle, config *config.Config, logger *logger.Logger, useCase domain.ComicUseCase) *delivery.Server {
+	fx.Invoke(func(lc fx.Lifecycle, config *config.Config, logger *logger.Logger, useCase domain.WatcherComic) *delivery.Server {
 		var server *delivery.Server
 		lc.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {
