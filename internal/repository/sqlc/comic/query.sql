@@ -1,7 +1,7 @@
--- name: CreateComicTracking :exec
+-- name: CreateComicTracking :one
 INSERT INTO comic_tracking (url, name, description, html, cron_spec)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, url, name, description, html, last_checked, cron_spec;
+RETURNING *;
 
 -- name: GetAllComicTrackings :many
 SELECT id, url, name, description, html, last_checked, cron_spec
@@ -14,10 +14,10 @@ WHERE id = $1;
 
 -- name: UpdateComicTracking :exec
 UPDATE comic_tracking
-SET url = $2, 
-    name = $3, 
-    description = $4, 
-    html = $5, 
+SET url = $2,
+    name = $3,
+    description = $4,
+    html = $5,
     last_checked = CURRENT_TIMESTAMP,
     cron_spec = $6
 WHERE id = $1

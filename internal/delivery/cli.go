@@ -86,5 +86,10 @@ func handleSubscribeAction(cCtx *cli.Context, logger *logger.Logger, useCase dom
 		CronSpec:    cCtx.String("cron-spec"),
 	}
 	ctx := app_context.New(cCtx.Context).WithLogger(logger)
-	return useCase.Subscribe(ctx, comic)
+	_, err := useCase.Subscribe(ctx, comic)
+	if err != nil {
+		ctx.Logger().Error("failed to subscribe comic", "err", err.Error())
+		return err
+	}
+	return nil
 }

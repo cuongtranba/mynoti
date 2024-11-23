@@ -22,14 +22,14 @@ type Job struct {
 }
 
 type ComicRepository interface {
-	Save(context.Context, *Comic) error
+	Save(context.Context, *Comic) (*Comic, error)
 	Get(context.Context, int32) (*Comic, error)
 	Delete(context.Context, int32) error
 	List(context.Context) ([]Comic, error)
 }
 
 type ComicUseCase interface {
-	Subscribe(ctx *app_context.AppContext, comic *Comic) error
+	Subscribe(ctx *app_context.AppContext, comic *Comic) (*Comic, error)
 	GetByID(ctx *app_context.AppContext, id int32) (*Comic, error)
 }
 
@@ -37,9 +37,13 @@ type HtmlFetcher interface {
 	Fetch(ctx *app_context.AppContext, url string) (string, error)
 }
 
-type Watcher interface {
+type WatcherRunner interface {
 	Watch(ctx *app_context.AppContext) error
 	Stop(ctx *app_context.AppContext) error
+}
+
+type Watcher interface {
+	WatcherRunner
 	Register(ctx *app_context.AppContext, j Job) error
 	Unregister(ctx *app_context.AppContext, id int32) error
 	List(ctx *app_context.AppContext) ([]Job, error)
@@ -51,4 +55,5 @@ type Notifier[T any] interface {
 
 type WatcherComic interface {
 	Register(ctx *app_context.AppContext, j Comic) error
+	WatcherRunner
 }

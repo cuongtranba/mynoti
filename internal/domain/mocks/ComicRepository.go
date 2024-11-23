@@ -93,21 +93,33 @@ func (_m *ComicRepository) List(_a0 context.Context) ([]domain.Comic, error) {
 }
 
 // Save provides a mock function with given fields: _a0, _a1
-func (_m *ComicRepository) Save(_a0 context.Context, _a1 *domain.Comic) error {
+func (_m *ComicRepository) Save(_a0 context.Context, _a1 *domain.Comic) (*domain.Comic, error) {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Save")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.Comic) error); ok {
+	var r0 *domain.Comic
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Comic) (*domain.Comic, error)); ok {
+		return rf(_a0, _a1)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Comic) *domain.Comic); ok {
 		r0 = rf(_a0, _a1)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Comic)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.Comic) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // NewComicRepository creates a new instance of ComicRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

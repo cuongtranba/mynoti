@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/cuongtranba/mynoti/internal/domain"
 	"github.com/cuongtranba/mynoti/pkg/app_context"
 	"github.com/pkg/errors"
@@ -20,7 +22,10 @@ func NewWatcher(
 	comicUseCase domain.ComicUseCase,
 ) domain.Watcher {
 	return &watcher{
-		cron:         cron.New(cron.WithChain(cron.SkipIfStillRunning(cron.DefaultLogger))),
+		cron: cron.New(
+			cron.WithChain(cron.SkipIfStillRunning(cron.DefaultLogger)),
+			cron.WithSeconds(),
+		),
 		notifier:     notifier,
 		htmlFetcher:  htmlFetcher,
 		comicUseCase: comicUseCase,
@@ -40,6 +45,7 @@ func (w *watcher) List(ctx *app_context.AppContext) ([]domain.Job, error) {
 func (w *watcher) Register(ctx *app_context.AppContext, j domain.Job) error {
 	ctx.Logger().Info("register job", "id", j.ID, "url", j.Url, "cron", j.JobSpec)
 	_, err := w.cron.AddFunc(j.JobSpec, func() {
+		ctx := app_context.New(context.WithoutCancel(ctx))
 		ctx.Logger().Info("run job", "id", j.ID, "url", j.Url, "cron", j.JobSpec)
 		htmlContent, err := w.htmlFetcher.Fetch(ctx, j.Url)
 		if err != nil {
@@ -49,6 +55,10 @@ func (w *watcher) Register(ctx *app_context.AppContext, j domain.Job) error {
 		comic, err := w.comicUseCase.GetByID(ctx, j.ID)
 		if err != nil {
 			ctx.Logger().Error("failed to get comic", "err", err.Error())
+			return
+		}
+		if comic == nil {
+			ctx.Logger().Error("record not found", "id", j.ID)
 			return
 		}
 		if comic.Html == htmlContent {
@@ -68,8 +78,10 @@ func (w *watcher) Register(ctx *app_context.AppContext, j domain.Job) error {
 
 // Stop implements domain.Watcher.
 func (w *watcher) Stop(ctx *app_context.AppContext) error {
+	ctx.Logger().Info("stop watcher")
 	v := w.cron.Stop()
 	<-v.Done()
+	ctx.Logger().Info("watcher stopped")
 	return nil
 }
 
@@ -85,15 +97,26 @@ type WatcherComic struct {
 	comicUseCase domain.ComicUseCase
 }
 
-// Register implements domain.WatcherComic.
+func (w *WatcherComic) Watch(ctx *app_context.AppContext) error {
+	return w.watcher.Watch(ctx)
+}
+
+func (w *WatcherComic) Stop(ctx *app_context.AppContext) error {
+	return w.watcher.Stop(ctx)
+}
+
 func (w *WatcherComic) Register(ctx *app_context.AppContext, j domain.Comic) error {
-	if err := w.comicUseCase.Subscribe(ctx, &j); err != nil {
-		return err
+	result, err := w.comicUseCase.Subscribe(ctx, &j)
+	if err != nil {
+		return errors.WithMessage(err, "failed to subscribe comic")
+	}
+	if result == nil {
+		return errors.New("failed to subscribe comic")
 	}
 	return w.watcher.Register(ctx, domain.Job{
-		ID:      j.ID,
-		Url:     j.Url,
-		JobSpec: j.CronSpec,
+		ID:      result.ID,
+		Url:     result.Url,
+		JobSpec: result.CronSpec,
 	})
 }
 

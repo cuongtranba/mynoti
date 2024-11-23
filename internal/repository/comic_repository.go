@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"errors"
 
+	"emperror.dev/errors"
 	"github.com/cuongtranba/mynoti/internal/domain"
 	"github.com/cuongtranba/mynoti/internal/repository/sqlc/comic"
 	"github.com/jackc/pgx/v5"
@@ -51,7 +51,7 @@ func (u *userRepository) Get(ctx context.Context, id int32) (*domain.Comic, erro
 	return toDomainComic(result)
 }
 
-func toDomainComic[T comic.GetAllComicTrackingsRow | *comic.GetComicTrackingByIDRow](c T) (*domain.Comic, error) {
+func toDomainComic[T comic.GetAllComicTrackingsRow | *comic.GetComicTrackingByIDRow | *comic.ComicTracking](c T) (*domain.Comic, error) {
 	extractFields := func(id int32, url, name, description, html, cronSpec string) *domain.Comic {
 		return &domain.Comic{
 			ID:          id,
@@ -64,8 +64,16 @@ func toDomainComic[T comic.GetAllComicTrackingsRow | *comic.GetComicTrackingByID
 	}
 	switch v := any(c).(type) {
 	case *comic.GetComicTrackingByIDRow:
+		if v == nil {
+			return nil, nil
+		}
 		return extractFields(v.ID, v.Url, v.Name.String, v.Description.String, v.Html.String, v.CronSpec.String), nil
 	case comic.GetAllComicTrackingsRow:
+		return extractFields(v.ID, v.Url, v.Name.String, v.Description.String, v.Html.String, v.CronSpec.String), nil
+	case *comic.ComicTracking:
+		if v == nil {
+			return nil, nil
+		}
 		return extractFields(v.ID, v.Url, v.Name.String, v.Description.String, v.Html.String, v.CronSpec.String), nil
 	default:
 		return nil, errors.New("not support type")
@@ -91,8 +99,8 @@ func (u *userRepository) List(ctx context.Context) ([]domain.Comic, error) {
 	return comics, nil
 }
 
-func (u *userRepository) Save(ctx context.Context, req *domain.Comic) error {
-	err := IgnoreNotFoundError(u.query.CreateComicTracking(ctx, comic.CreateComicTrackingParams{
+func (u *userRepository) Save(ctx context.Context, req *domain.Comic) (*domain.Comic, error) {
+	result, err := IgnoreNotFoundError2Params(u.query.CreateComicTracking(ctx, comic.CreateComicTrackingParams{
 		Url: req.Url,
 		Name: pgtype.Text{
 			String: req.Name,
@@ -111,7 +119,10 @@ func (u *userRepository) Save(ctx context.Context, req *domain.Comic) error {
 			Valid:  true,
 		},
 	}))
-	return err
+	if err != nil {
+		return nil, errors.WithMessage(err, "failed to save comic")
+	}
+	return toDomainComic(result)
 }
 
 func NewComicRepository(query *comic.Queries) domain.ComicRepository {

@@ -113,7 +113,7 @@ var CLIApp = fx.New(
 	CLIModule,
 )
 
-var EchoModule = fx.Module(
+var EchoNotifierModule = fx.Module(
 	"EchoModule",
 	fx.Provide(
 		usecase.NewEchoNotifier,
@@ -123,7 +123,7 @@ var EchoModule = fx.Module(
 var WatcherModule = fx.Module(
 	"WatcherModule",
 	UseCaseComicModule,
-	EchoModule,
+	EchoNotifierModule,
 	fx.Provide(
 		usecase.NewWatcher,
 	),

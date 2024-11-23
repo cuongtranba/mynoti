@@ -16,20 +16,17 @@ func (w *comicUseCase) GetByID(ctx *app_context.AppContext, id int32) (*domain.C
 	return w.repo.Get(ctx, id)
 }
 
-func (w *comicUseCase) Subscribe(ctx *app_context.AppContext, comic *domain.Comic) error {
+func (w *comicUseCase) Subscribe(ctx *app_context.AppContext, comic *domain.Comic) (*domain.Comic, error) {
 	if err := validate.Struct(comic); err != nil {
-		return err
+		return nil, err
 	}
 	htmlContent, err := w.htmlFetcher.Fetch(ctx, comic.Url)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	ctx.Logger().Debug("html content", logger.String("content", htmlContent))
 	comic.Html = htmlContent
-	if err := w.repo.Save(ctx, comic); err != nil {
-		return err
-	}
-	return nil
+	return w.repo.Save(ctx, comic)
 }
 
 func NewComicUseCase(

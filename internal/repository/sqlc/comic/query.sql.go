@@ -11,10 +11,10 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createComicTracking = `-- name: CreateComicTracking :exec
+const createComicTracking = `-- name: CreateComicTracking :one
 INSERT INTO comic_tracking (url, name, description, html, cron_spec)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, url, name, description, html, last_checked, cron_spec
+RETURNING id, url, name, description, html, cron_spec, last_checked
 `
 
 type CreateComicTrackingParams struct {
@@ -25,15 +25,25 @@ type CreateComicTrackingParams struct {
 	CronSpec    pgtype.Text
 }
 
-func (q *Queries) CreateComicTracking(ctx context.Context, arg CreateComicTrackingParams) error {
-	_, err := q.db.Exec(ctx, createComicTracking,
+func (q *Queries) CreateComicTracking(ctx context.Context, arg CreateComicTrackingParams) (ComicTracking, error) {
+	row := q.db.QueryRow(ctx, createComicTracking,
 		arg.Url,
 		arg.Name,
 		arg.Description,
 		arg.Html,
 		arg.CronSpec,
 	)
-	return err
+	var i ComicTracking
+	err := row.Scan(
+		&i.ID,
+		&i.Url,
+		&i.Name,
+		&i.Description,
+		&i.Html,
+		&i.CronSpec,
+		&i.LastChecked,
+	)
+	return i, err
 }
 
 const deleteComicTracking = `-- name: DeleteComicTracking :exec
@@ -173,10 +183,10 @@ func (q *Queries) GetComicTrackingsList(ctx context.Context, arg GetComicTrackin
 
 const updateComicTracking = `-- name: UpdateComicTracking :exec
 UPDATE comic_tracking
-SET url = $2, 
-    name = $3, 
-    description = $4, 
-    html = $5, 
+SET url = $2,
+    name = $3,
+    description = $4,
+    html = $5,
     last_checked = CURRENT_TIMESTAMP,
     cron_spec = $6
 WHERE id = $1
